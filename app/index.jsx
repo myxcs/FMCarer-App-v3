@@ -1,5 +1,7 @@
 import { Image } from "expo-image";
+import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+
 
 export default function Index() {
   return (
@@ -10,6 +12,9 @@ export default function Index() {
         style={{ width: 50, height: 50 }}
         testID="index-image"
       />
+
+    <Link href="/(auth)/signup">Go to signup</Link>
+    <Link href="/(auth)">Go to login</Link>
     </View>
   );
 }
