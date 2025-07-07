@@ -1,17 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import styles from "../../assets/styles/signup.styles";
 import COLORS from "../../constants/colors";
-
+import { useAuthStore } from "../../store/authStore";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -19,22 +21,37 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const { user, isLoading, register} = useAuthStore();
+
+  const router = useRouter();
+
+  const handleSignUp = async () => {
+    const result = await register(username, email, password);
+
+    if (!result.success) Alert.alert("Error", result.error);
+  };
 
 
-   return (
+
+  return (
+
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      {      /* MAIN CONTAINER */}
       <View style={styles.container}>
         <View style={styles.card}>
+
           {/* HEADER */}
           <View style={styles.header}>
             <Text style={styles.title}>FMCarer 🧸</Text>
             <Text style={styles.subtitle}>For your children</Text>
           </View>
 
+          {/* FORM CONTAINER */}
           <View style={styles.formContainer}>
+
             {/* USERNAME INPUT */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Username</Text>
@@ -96,6 +113,8 @@ export default function Signup() {
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                 />
+
+                {/* EYE ICON */}
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
@@ -110,10 +129,15 @@ export default function Signup() {
             </View>
 
             {/* SIGNUP BUTTON */}
-            <TouchableOpacity style={styles.button}>
+              <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
                 <Text style={styles.buttonText}>Sign Up</Text>
+              )}
             </TouchableOpacity>
-
+                
+        
             {/* FOOTER */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
@@ -121,6 +145,8 @@ export default function Signup() {
                 <Text style={styles.link}>Login</Text>
               </TouchableOpacity>
             </View>
+
+
           </View>
         </View>
       </View>
