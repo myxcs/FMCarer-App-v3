@@ -1,18 +1,16 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { useState } from "react";
 import {
-  View,
-  Text,
   Image,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { Link } from "expo-router";
 import styles from "../../assets/styles/login.styles";
-import { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 
  
