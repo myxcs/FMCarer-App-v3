@@ -8,6 +8,7 @@ import {
   Platform,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -21,7 +22,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { user, isLoading, register} = useAuthStore();
+  const { user, isLoading, register } = useAuthStore();
 
   const router = useRouter();
 
@@ -29,6 +30,14 @@ export default function Signup() {
     const result = await register(username, email, password);
 
     if (!result.success) Alert.alert("Error", result.error);
+    else {
+      //Alert.alert("Success", "Account created successfully!");
+      ToastAndroid.show(
+        "Account created successfully!",
+        ToastAndroid.SHORT
+      );
+      router.push("/(auth)");
+    }
   };
 
 

@@ -2,34 +2,43 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import styles from "../../assets/styles/login.styles";
 import COLORS from "../../constants/colors";
 
- 
+import { useAuthStore } from "../../store/authStore";
 
 export default function Login() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  //const { isLoading, login, isCheckingAuth } = useAuthStore();
+  const { isLoading, login, isCheckingAuth } = useAuthStore();
 
-  //  const handleLogin = async () => {
-  //   const result = await login(email, password);
+  const handleLogin = async () => {
+    const result = await login(email, password);
 
-  //   if (!result.success) Alert.alert("Error", result.error);
-  // };
+    if (!result.success) Alert.alert("Error", result.error);
+    else {
+      ToastAndroid.show(
+        "Login successful!",
+        ToastAndroid.SHORT
+      );
+      
+    }
 
-  // if (isCheckingAuth) return null;
+  };
 
+  //if (isCheckingAuth) return null;
 
   return (
     <KeyboardAvoidingView
@@ -46,10 +55,8 @@ export default function Login() {
           />
         </View>
 
-        {/* HEADER */}
         <View style={styles.card}>
           <View style={styles.formContainer}>
-
             {/* EMAIL */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
@@ -60,7 +67,6 @@ export default function Login() {
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
-                {/* INPUT */}
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email"
@@ -84,7 +90,6 @@ export default function Login() {
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
-
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
@@ -95,7 +100,6 @@ export default function Login() {
                   secureTextEntry={!showPassword}
                 />
 
-                {/* EYE ICON */}
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
@@ -109,11 +113,12 @@ export default function Login() {
               </View>
             </View>
 
-            {/* LOGIN BUTTON */}
-            <TouchableOpacity style={styles.button} 
-              //onPress={handleLogin}
-            >
-              <Text style={styles.buttonText}>Login</Text>
+            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
             </TouchableOpacity>
 
             {/* FOOTER */}
@@ -125,11 +130,9 @@ export default function Login() {
                 </TouchableOpacity>
               </Link>
             </View>
-
-
           </View>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
-};
+}
