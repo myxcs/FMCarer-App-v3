@@ -9,6 +9,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarShowLabel: false,
+
         headerShown: false,
         tabBarActiveTintColor: COLORS.primary,
         headerTitleStyle: {
@@ -20,14 +22,23 @@ export default function TabLayout() {
           backgroundColor: COLORS.cardBackground,
           borderTopWidth: 1,
           borderTopColor: COLORS.border,
-          paddingTop: 5,
+          paddingTop: 15,
           paddingBottom: insets.bottom,
-          height: 60 + insets.bottom,
+          height: 70 + insets.bottom,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,  
+
         },
       }}
     >
       <Tabs.Screen
         name="index"
+        options={{
+          href: null, // <-- Quan trọng: Ẩn khỏi tab bar!
+        }}
+      />
+      <Tabs.Screen
+        name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color, size }) => (
@@ -53,7 +64,7 @@ export default function TabLayout() {
           ),
         }}
       />
-       <Tabs.Screen
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
