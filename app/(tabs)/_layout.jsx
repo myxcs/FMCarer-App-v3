@@ -10,7 +10,6 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-
         headerShown: false,
         tabBarActiveTintColor: COLORS.primary,
         headerTitleStyle: {
@@ -26,8 +25,7 @@ export default function TabLayout() {
           paddingBottom: insets.bottom,
           height: 70 + insets.bottom,
           borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,  
-
+          borderTopRightRadius: 20,
         },
       }}
     >
@@ -51,7 +49,7 @@ export default function TabLayout() {
         options={{
           title: "Post",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
+            <Ionicons name="globe-outline" size={size} color={color} />
           ),
         }}
       />

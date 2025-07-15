@@ -1,19 +1,22 @@
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { API_URL } from "../../../constants/api";
 import { useAuthStore } from "../../../store/authStore";
 
 export default function CreatePost() {
+  // State variables
   const [content, setContent] = useState("");
   const [audience, setAudience] = useState("family");
   const [images, setImages] = useState([]);
@@ -22,23 +25,52 @@ export default function CreatePost() {
   const router = useRouter();
   const { token } = useAuthStore();
 
-  const pickImages = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsMultipleSelection: true,
-      quality: 0.8,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      selectionLimit: 5,
-    });
+  const handleRemoveImage = (indexToRemove) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== indexToRemove));
+  };
 
-    if (!result.canceled) {
-      const selected = result.assets.slice(0, 5);
-      setImages(selected);
+  const pickImages = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Quyền bị từ chối", "Cần cấp quyền để chọn ảnh");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        selectionLimit: 5,
+      });
+
+      if (!result.canceled) {
+        const selected = result.assets.slice(0, 5);
+        setImages(selected);
+      }
+    } catch (error) {
+      console.error("Lỗi chọn ảnh:", error);
+      Alert.alert("Lỗi", "Đã xảy ra lỗi khi chọn ảnh");
     }
   };
 
   const handleSubmit = async () => {
+    // Kiểm tra token
+    if (!token) {
+      Alert.alert("Lỗi", "Phiên đăng nhập đã hết, vui lòng đăng nhập lại.");
+      return;
+    }
+
+    // Kiểm tra nội dung bài viết
     if (!content.trim()) {
       Alert.alert("Lỗi", "Vui lòng nhập nội dung bài viết.");
+      return;
+    }
+
+    // Kiểm tra số lượng ảnh
+    if (images.length > 5) {
+      Alert.alert("Lỗi", "Chỉ được chọn tối đa 5 ảnh.");
       return;
     }
 
@@ -49,19 +81,27 @@ export default function CreatePost() {
       formData.append("content", content);
       formData.append("audience", audience);
 
+      // Hàm lấy MIME type theo đuôi ảnh
+      const getMimeType = (uri) => {
+        if (uri.endsWith(".png")) return "image/png";
+        if (uri.endsWith(".webp")) return "image/webp";
+        return "image/jpeg";
+      };
+
+      // Thêm ảnh vào FormData
       images.forEach((img, index) => {
         formData.append("images", {
           uri: img.uri,
           name: `photo_${index}.jpg`,
-          type: "image/jpeg",
+          type: getMimeType(img.uri),
         });
       });
 
-      const res = await fetch("http://192.168.1.112:3000/api/posts", {
+      const res = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+          // KHÔNG thêm Content-Type, React Native sẽ tự xử lý với boundary
         },
         body: formData,
       });
@@ -72,18 +112,20 @@ export default function CreatePost() {
       }
 
       Alert.alert("Thành công", "Bài viết đã được đăng.");
-      router.back();
+      router.back(); // quay lại màn hình trước
     } catch (err) {
-      Alert.alert("Lỗi", err.message);
+      Alert.alert("Lỗi", err.message || "Đã xảy ra lỗi");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
+    // Render the create post form
     <ScrollView style={styles.container}>
       <Text style={styles.heading}>Tạo bài viết</Text>
 
+      {/* Content input */}
       <TextInput
         placeholder="Bạn đang nghĩ gì?"
         multiline
@@ -92,6 +134,7 @@ export default function CreatePost() {
         style={styles.input}
       />
 
+      {/* Audience selection */}
       <View style={styles.row}>
         <Text style={styles.label}>Chế độ hiển thị:</Text>
         <TouchableOpacity
@@ -106,20 +149,27 @@ export default function CreatePost() {
         </TouchableOpacity>
       </View>
 
+      {/* Image upload button */}
       <TouchableOpacity style={styles.uploadBtn} onPress={pickImages}>
         <Text style={styles.uploadText}>Chọn ảnh ({images.length}/5)</Text>
       </TouchableOpacity>
 
-      <View style={styles.preview}>
-        {images.map((img, idx) => (
-          <Image
-            key={idx}
-            source={{ uri: img.uri }}
-            style={styles.imagePreview}
-          />
+      {/* Image preview */}
+      <View style={styles.imagePreviewContainer}>
+        {images.map((img, index) => (
+          <View key={index} style={styles.imageWrapper}>
+            <Image source={{ uri: img.uri }} style={styles.image} />
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => handleRemoveImage(index)}
+            >
+              <Ionicons name="close-circle" size={20} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
 
+      {/* Submit button */}
       <TouchableOpacity
         style={[styles.submitBtn, isSubmitting && { opacity: 0.5 }]}
         onPress={handleSubmit}
@@ -207,5 +257,36 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  imagePreviewContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginVertical: 12,
+  },
+
+  imageWrapper: {
+    position: "relative",
+    width: 100,
+    height: 100,
+    marginRight: 8,
+    marginBottom: 8,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#F3F4F6",
+  },
+
+  image: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 8,
+  },
+
+  removeButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: "#fff",
+    borderRadius: 999,
   },
 });
