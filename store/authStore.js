@@ -1,3 +1,4 @@
+// store/authStore.js
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { API_URL } from "../constants/api";
